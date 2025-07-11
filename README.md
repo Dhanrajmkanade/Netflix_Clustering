@@ -35,4 +35,5 @@ pip install -r requirements.txt
 
 Author
 Dhanraj Kanade
+
 Contact: dkanade988@gmail.com
