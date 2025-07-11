@@ -4,36 +4,41 @@ from sklearn.cluster import KMeans
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-# Load dataset
+# Load the dataset
 df = pd.read_csv('netflix.csv')
 print("Initial data sample:")
 print(df.head())
 
-# Clean 'duration' column: extract digits, convert to numeric, fill missing with 0, convert to int
-df['duration'] = pd.to_numeric(df['duration'].str.extract('(\d+)')[0], errors='coerce')
-df['duration'] = df['duration'].fillna(0).astype(int)
+# Clean and preprocess the 'duration' column
+# Extract numeric values from strings (e.g., "90 min" -> 90)
+df['duration'] = df['duration'].str.extract('(\d+)')  # Extract digits as strings
+df['duration'] = pd.to_numeric(df['duration'], errors='coerce').fillna(0).astype(int)
 
-# Encode categorical columns 'listed_in' (genres) and 'rating'
-le = LabelEncoder()
+# Encode categorical columns: 'listed_in' (genres) and 'rating'
+label_encoders = {}
 for col in ['listed_in', 'rating']:
+    le = LabelEncoder()
     df[col] = le.fit_transform(df[col].astype(str))
+    label_encoders[col] = le  # Store encoder for possible inverse transform later
 
 # Select features for clustering
 features = df[['listed_in', 'rating', 'duration']]
 
-# Initialize and fit KMeans clustering
+# Initialize and fit the KMeans clustering model
 kmeans = KMeans(n_clusters=5, random_state=42)
-df['Cluster'] = kmeans.fit_predict(features)
+df['cluster'] = kmeans.fit_predict(features)
 
-print("\nCluster assignment sample:")
-print(df[['title', 'listed_in', 'rating', 'duration', 'Cluster']].head())
+print("\nSample cluster assignments:")
+print(df[['title', 'listed_in', 'rating', 'duration', 'cluster']].head())
 
-# Visualize clustering result
+# Visualize clusters: duration vs rating colored by cluster
 plt.figure(figsize=(10, 6))
-sns.scatterplot(data=df, x='duration', y='rating', hue='Cluster', palette='viridis')
+sns.scatterplot(data=df, x='duration', y='rating', hue='cluster', palette='viridis', alpha=0.7)
 plt.title('Netflix Shows Clustering')
 plt.xlabel('Duration (minutes)')
 plt.ylabel('Rating (encoded)')
 plt.legend(title='Cluster')
+plt.tight_layout()
 plt.show()
+
 
